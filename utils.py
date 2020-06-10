@@ -26,8 +26,10 @@ def jaccard(str1, str2):
     return float(len(c)) / (len(a) + len(b) - len(c))
 
 def compute_jaccard_score(text, start_idx, end_idx, start_logits, end_logits):
-    start_pred = np.argmax(start_logits)
-    end_pred = np.argmax(end_logits)
+    # start_pred = np.argmax(start_logits)
+    # end_pred = np.argmax(end_logits)
+    start_pred = int(start_logits)
+    end_pred = int(end_logits)
     if start_pred > end_pred:
         pred = text
     else:
@@ -36,6 +38,17 @@ def compute_jaccard_score(text, start_idx, end_idx, start_logits, end_logits):
     true = get_selected_text(text, start_idx, end_idx)
     
     return jaccard(true, pred)
+
+def test_get_selected_text(text, start_idx, end_idx):
+    # start_pred = np.argmax(start_idx)
+    # end_pred = np.argmax(end_idx)
+    start_pred = int(start_idx)
+    end_pred = int(end_idx)
+    if start_pred > end_pred:
+        pred = text
+    else:
+        pred = get_selected_text(text, start_pred, end_pred)
+    return pred
 
 def load_data():
 
