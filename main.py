@@ -194,7 +194,14 @@ def train(args, model, optimizer, device, dataloaders_dict, epoch, logger):
                 logger.add_histogram("Model Params/"+name, param.data, epoch+1)
 
 
-def predict(args, model, device, dataloaders_dict):
+# Create the submission.csv file
+def predict(args, model, device, dataloaders_dict, test_df):
+    
+    submission_df = pd.DataFrame()
+    submission_df['textID'] = test_df
+    # submission_df["selected_text"] = ""
+    texts = []
+
     model.eval()
     
     # jaccard_score = 0.0
@@ -212,14 +219,11 @@ def predict(args, model, device, dataloaders_dict):
 
             for i in range(len(inputs)):
                 # jaccard_score += compute_jaccard_score(tweet[i], start_idx[i], end_idx[i], start_logits[i], end_logits[i])
-                print(data['tweet'][i])
-                print(start_logits.shape)
-                input()
-                print((start_logits[i]))
-                print((end_logits[i]))
-                print(test_get_selected_text(data['tweet'][i], start_logits[i], end_logits[i]))
-                input()
-
+                texts.append(test_get_selected_text(data['tweet'][i], start_logits[i], end_logits[i]))
+                
+    submission_df["selected_text"] = texts
+    print(submission_df.head())
+    submission_df.to_csv('data/submission.csv', index = False)
     # jaccard_score = jaccard_score / len(dataloaders_dict[phase].dataset)
     # print('Jaccard: {:.4f}'.format(jaccard_score))
 
@@ -230,7 +234,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--batch-size', type=int, default=64, metavar='N',
                         help='input batch size for training (default: 100)')
-    parser.add_argument('--epochs', type=int, default=100, metavar='N',
+    parser.add_argument('--epochs', type=int, default=50, metavar='N',
                         help='number of epochs to train (default: 14)')
     parser.add_argument('--lr', type=float, default=1e-2, metavar='LR',
                         help='learning rate (default: 1.0)')
@@ -286,7 +290,7 @@ def main():
     # print(model.embedding(torch.tensor([word_to_ix["hello"]], dtype=torch.long).to(device)))
 
     ## Testing Code
-    
-    # predict(args, model, device, dataloaders_dict)
+    test_df = TweetDataset(test_data, word_to_ix, test_dset=True).data['textID']
+    predict(args, model, device, dataloaders_dict, test_df)
 
 main()
